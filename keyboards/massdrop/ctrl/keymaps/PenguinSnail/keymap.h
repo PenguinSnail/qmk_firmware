@@ -53,7 +53,12 @@ led_flags_t rgb_time_out_saved_flag;    // Store LED flag before timeout so it c
 enum layers {
     LYR_MAIN = 0,
     LYR_FUNC,
-    LYR_GIT
+    LYR_GIT,
+    LYR_COL
+};
+enum game_color_layers {
+    LYR_OSU = LYR_COL + 1,
+    LYR_TF2
 };
 
 enum ctrl_keycodes {
@@ -77,6 +82,12 @@ enum git_keycodes {
     G_FETCH,
     G_MERGE,
     G_LOG
+};
+
+enum game_color_keycodes {
+    C_RESET = G_LOG + 1,
+    C_OSU,
+    C_TF2
 };
 
 // from `endgame` layout

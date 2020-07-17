@@ -4,10 +4,15 @@ static uint16_t idle_timer;             // Idle LED timeout timer
 static uint8_t idle_second_counter;     // Idle LED seconds counter, counts seconds not milliseconds
 static uint8_t key_event_counter;       // This counter is used to check if any keys are being held
 
+bool game_color;
+static uint16_t selected_game_color;
+
 // leave this here even though we don't use tapdance (yet),
 // compile will fail without this unless we disable all the tapdance flags
 qk_tap_dance_action_t tap_dance_actions[] = {
 };
+
+static uint16_t game_layer_offset = C_OSU - LYR_OSU;
 
 static const char * git_commands[] = {
     "git init ",
@@ -40,7 +45,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         XXXXXXX, XXXXXXX, RGB_VAI, XXXXXXX, XXXXXXX, ROUT_TO, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_MPRV, KC_MNXT, KC_VOLD,
         _______, XXXXXXX, RGB_VAD, RGB_TOG, ROUT_VI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
         _______, XXXXXXX, XXXXXXX, XXXXXXX, ROUT_VD, MD_BOOT, NK_TOGG, XXXXXXX, XXXXXXX, XXXXXXX, OSL(LYR_GIT), _______,                         _______,
-        _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
+        _______, _______, _______,                   XXXXXXX,                            _______, _______, OSL(LYR_COL), _______,       _______, _______, _______
     ),
     [LYR_GIT] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            XXXXXXX, XXXXXXX, XXXXXXX,
@@ -48,6 +53,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_INIT,  XXXXXXX, G_PULL,  G_PUSH,  XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
         _______, G_ADD,   G_STAT,  G_DIFF,  G_FETCH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_LOG,   XXXXXXX, XXXXXXX, _______,
         _______, XXXXXXX, G_CHECK, G_CLONE, G_COMMI, G_BRANC, XXXXXXX, G_MERGE, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
+        _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
+    ),
+    [LYR_COL] = LAYOUT(
+        C_RESET, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,   XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, C_TF2,   XXXXXXX, XXXXXXX, XXXXXXX, C_OSU,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
         _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
     ),
 };
@@ -77,7 +90,7 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         _______, _______, GREEN,   _______, _______, ORANGE,  _______, _______, _______, _______, _______, _______, _______, _______,   AZURE,   AZURE,   RED,
         CYAN,    _______, RED,     WHITE,   GREEN,  _______, _______, _______, _______, _______, _______, _______, CYAN,
         CYAN,    _______, _______, _______, RED,    RED,     WHITE,   _______, _______, _______, GREEN,   CYAN,                                 SPRING,
-        CYAN,    CYAN,    CYAN,                     _______,                             CYAN,   GOLD,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
+        CYAN,    CYAN,    CYAN,                     _______,                             CYAN,   GOLD,    RED,     CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
         GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD,
@@ -95,6 +108,43 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN,
         GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN
     },
+    [LYR_COL] = {
+        RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
+        _______, _______, _______, _______, _______, RED,     _______, _______, _______, PURPLE,  _______, _______, _______, _______,   _______, _______, _______,
+        CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
+        CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,                                 SPRING,
+        CYAN,    CYAN,    CYAN,                      _______,                            CYAN,    GOLD,    RED,     CYAN,               SPRING,  SPRING,  SPRING,
+
+        // light bar/underglow LEDs
+        RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED,
+        RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED
+    },
+
+    [LYR_OSU] = {
+        RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______,
+        _______, _______, GOLD,    GOLD,    _______, _______, _______, _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                              _______,
+        _______, _______, _______,                   _______,                            _______, CYAN,    CYAN, _______,               _______, _______, _______,
+
+        // light bar/underglow LEDs
+        PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE,
+        PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE
+    },
+    [LYR_TF2] = {
+        RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
+        AZURE,   _______, SPRING,  MAGENT,  RED,     _______, RED,     BLUE,    _______, _______, _______, _______, _______, _______,   _______, _______, _______,
+        _______, SPRING,  SPRING,  SPRING,  _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
+        CYAN,    GOLD,    GOLD,    GOLD,    _______, _______, _______, _______, ORANGE,  ORANGE,  _______, _______,                              _______,
+        _______, _______, _______,                   GREEN,                              _______, CYAN,    CYAN,    _______,            _______, _______, _______,
+
+        // light bar/underglow LEDs
+        RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED,
+        RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED
+    },
 };
 
     // reset the definition
@@ -106,11 +156,17 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
 void matrix_init_user(void) {
     idle_second_counter = 0;                            // Counter for number of seconds keyboard has been idle.
     key_event_counter = 0;                              // Counter to determine if keys are being held, neutral at 0.
-    rgb_time_out_seconds = RGB_DEFAULT_TIME_OUT;        // RGB timeout initialized to its default configure in keymap.h
+
+    rgb_enabled_flag = true;                            // Initially, keyboard RGB is enabled. Change to false config.h initializes RGB disabled.
+
     rgb_time_out_enable = true;                         // Disable RGB timeout by default. Enable using toggle key.
     rgb_time_out_user_value = rgb_time_out_enable;      // Has to have the same initial value as rgb_time_out_enable.
-    rgb_enabled_flag = true;                            // Initially, keyboard RGB is enabled. Change to false config.h initializes RGB disabled.
+    rgb_time_out_seconds = RGB_DEFAULT_TIME_OUT;        // RGB timeout initialized to its default configure in keymap.h
+
     rgb_time_out_saved_flag = rgb_matrix_get_flags();   // Save RGB matrix state for when keyboard comes back from ide.
+
+    game_color = false;
+    selected_game_color = 0;
 };
 
 // runs once after boot
@@ -224,6 +280,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
                 return false;
             }
+            case C_RESET: {
+                clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
+                game_color = false;
+                return false;
+            }
+            case C_OSU ... C_TF2: {
+                clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
+                game_color = true;
+                selected_game_color = keycode - game_layer_offset;
+                return false;
+            }
         }
     }
     return true;
@@ -259,5 +326,9 @@ void rgb_matrix_indicators_user(void) {
     if (g_suspend_state || rgb_matrix_get_flags() == LED_FLAG_NONE) {
         return;
     }
-    set_layer_color(get_highest_layer(layer_state));
+    if (game_color && get_highest_layer(layer_state) == LYR_MAIN) {
+        set_layer_color(selected_game_color);
+    } else {
+        set_layer_color(get_highest_layer(layer_state));
+    }
 }
