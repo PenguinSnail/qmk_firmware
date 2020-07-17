@@ -60,7 +60,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,   XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, C_TF2,   XXXXXXX, XXXXXXX, XXXXXXX, C_OSU,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
         _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
+        _______, XXXXXXX, XXXXXXX, C_CIV,   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
         _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
     ),
 };
@@ -113,7 +113,7 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
         _______, _______, _______, _______, _______, RED,     _______, _______, _______, PURPLE,  _______, _______, _______, _______,   _______, _______, _______,
         CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
-        CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,                                 SPRING,
+        CYAN,    _______, _______, CHART,   _______, _______, _______, _______, _______, _______, _______, CYAN,                                 SPRING,
         CYAN,    CYAN,    CYAN,                      _______,                            CYAN,    GOLD,    RED,     CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
@@ -126,8 +126,8 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______,
         _______, _______, GOLD,    GOLD,    _______, _______, _______, _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                              _______,
-        _______, _______, _______,                   _______,                            _______, CYAN,    CYAN, _______,               _______, _______, _______,
+        CYAN,    BLUE,    RED,     RED,     BLUE,    _______, _______, _______, _______, _______, _______, _______,                              _______,
+        _______, _______, _______,                   GREEN,                              _______, CYAN,    CYAN, _______,               SPRING,  _______, SPRING,
 
         // light bar/underglow LEDs
         PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE, PURPLE,
@@ -135,15 +135,27 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
     },
     [LYR_TF2] = {
         RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
+        _______, GREEN,   GREEN,   GREEN,   YELLOW,  YELLOW,  _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
         AZURE,   _______, SPRING,  MAGENT,  RED,     _______, RED,     BLUE,    _______, _______, _______, _______, _______, _______,   _______, _______, _______,
-        _______, SPRING,  SPRING,  SPRING,  _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
-        CYAN,    GOLD,    GOLD,    GOLD,    _______, _______, _______, _______, ORANGE,  ORANGE,  _______, _______,                              _______,
+        _______, SPRING,  SPRING,  SPRING,  _______, _______, WHITE,   _______, _______, _______, _______, _______, CYAN,
+        CYAN,    GOLD,    GOLD,    GOLD,    _______, _______, _______, WHITE,   ORANGE,  ORANGE,  _______, _______,                              _______,
         _______, _______, _______,                   GREEN,                              _______, CYAN,    CYAN,    _______,            _______, _______, _______,
 
         // light bar/underglow LEDs
         RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED,
         RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED, RED
+    },
+    [LYR_CIV] = {
+        RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, GOLD,    _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   RED,     _______, _______,
+        _______, RED,     _______, _______, MAGENT,  WHITE,   _______, _______, _______, _______, _______, _______, GREEN,
+        _______, _______, _______, _______, _______, _______, _______, GREEN,   ORANGE,  ORANGE,  _______, _______,                              _______,
+        _______, _______, _______,                   WHITE,                              _______, CYAN,    CYAN, _______,               _______, _______, _______,
+
+        // light bar/underglow LEDs
+        CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART,
+        CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART, CHART
     },
 };
 
@@ -285,7 +297,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 game_color = false;
                 return false;
             }
-            case C_OSU ... C_TF2: {
+            case C_OSU ... C_CIV: {
                 clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
                 game_color = true;
                 selected_game_color = keycode - game_layer_offset;

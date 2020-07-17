@@ -58,7 +58,8 @@ enum layers {
 };
 enum game_color_layers {
     LYR_OSU = LYR_COL + 1,
-    LYR_TF2
+    LYR_TF2,
+    LYR_CIV
 };
 
 enum ctrl_keycodes {
@@ -87,7 +88,8 @@ enum git_keycodes {
 enum game_color_keycodes {
     C_RESET = G_LOG + 1,
     C_OSU,
-    C_TF2
+    C_TF2,
+    C_CIV
 };
 
 // from `endgame` layout
