@@ -8,6 +8,6 @@ TAP_DANCE_ENABLE = yes      	# Enable tap dance keys
 
 EXTRAKEY_ENABLE = yes       	# Audio control and System control
 
-COMMAND_ENABLE = yes        	# Commands for debug and configuration
-CONSOLE_ENABLE = yes        	# Enable debugging console. Increases firmware size.
-TERMINAL_ENABLE = yes
+COMMAND_ENABLE = no        	# Commands for debug and configuration
+CONSOLE_ENABLE = no        	# Enable debugging console. Increases firmware size.
+TERMINAL_ENABLE = no

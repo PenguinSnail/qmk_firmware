@@ -47,7 +47,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,   XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_INIT,  XXXXXXX, G_PULL,  G_PUSH,  XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
         _______, G_ADD,   G_STAT,  G_DIFF,  G_FETCH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_LOG,   XXXXXXX, XXXXXXX, _______,
-        _______, XXXXXXX, XXXXXXX, G_CLONE, G_COMMI, XXXXXXX, XXXXXXX, G_MERGE, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
+        _______, XXXXXXX, G_CHECK, G_CLONE, G_COMMI, G_BRANC, XXXXXXX, G_MERGE, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
         _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
     ),
 };
@@ -88,7 +88,7 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, GREEN,   _______, CORAL,   PURPLE,  _______, _______,   _______, _______, _______,
         CYAN,    AZURE,   GREEN,   MAGENT,  GREEN,   _______, _______, _______, _______, GREEN,   _______, _______, CYAN,
-        CYAN,    _______, _______, CORAL,   CHART,   _______, _______, CHART,   _______, _______, GREEN,   CYAN,                                 SPRING,
+        CYAN,    _______, CHART,   CORAL,   SPRING,  ORANGE,  _______, CHART,   _______, _______, GREEN,   CYAN,                                 SPRING,
         CYAN,    CYAN,    CYAN,                      _______,                            CYAN,    GOLD,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
