@@ -1,5 +1,9 @@
 #include "keymap.h"
 
+static uint16_t idle_timer;             // Idle LED timeout timer
+static uint8_t idle_second_counter;     // Idle LED seconds counter, counts seconds not milliseconds
+static uint8_t key_event_counter;       // This counter is used to check if any keys are being held
+
 // leave this here even though we don't use tapdance (yet),
 // compile will fail without this unless we disable all the tapdance flags
 qk_tap_dance_action_t tap_dance_actions[] = {
@@ -28,22 +32,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS,   KC_DEL,  KC_END,  KC_PGDN,
         KC_CAPS, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_ENT,
         KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,                              KC_UP,
-        KC_LCTL, KC_LGUI, KC_LALT,                   KC_SPACE,                           KC_RALT, MO(LYR_FUNC), KC_APP,  KC_RCTL,       KC_LEFT, KC_DOWN, KC_RIGHT
+        KC_LCTL, KC_LALT, KC_LGUI,                   KC_SPACE,                           KC_RALT, MO(LYR_FUNC), KC_APP,  KC_RCTL,       KC_LEFT, KC_DOWN, KC_RIGHT
     ),
     [LYR_FUNC] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            KC_MUTE, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,   KC_MPLY, KC_MSTP, KC_VOLU,
-        XXXXXXX, XXXXXXX, RGB_VAI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_MPRV, KC_MNXT, KC_VOLD,
-        _______, XXXXXXX, RGB_VAD, RGB_TOG, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, MD_BOOT, NK_TOGG, XXXXXXX, XXXXXXX, XXXXXXX, MO(LYR_GIT), _______,                          _______,
+        XXXXXXX, XXXXXXX, RGB_VAI, XXXXXXX, XXXXXXX, ROUT_TO, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   KC_MPRV, KC_MNXT, KC_VOLD,
+        _______, XXXXXXX, RGB_VAD, RGB_TOG, ROUT_VI, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
+        _______, XXXXXXX, XXXXXXX, XXXXXXX, ROUT_VD, MD_BOOT, NK_TOGG, XXXXXXX, XXXXXXX, XXXXXXX, OSL(LYR_GIT), _______,                         _______,
         _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
     ),
     [LYR_GIT] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            XXXXXXX, XXXXXXX, XXXXXXX,
         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,   XXXXXXX, XXXXXXX, XXXXXXX,
-        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______,
-        _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, _______, _______,                              _______,
+        XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_INIT,  XXXXXXX, G_PULL,  G_PUSH,  XXXXXXX, XXXXXXX,   XXXXXXX, XXXXXXX, XXXXXXX,
+        _______, G_ADD,   G_STAT,  G_DIFF,  G_FETCH, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, G_LOG,   XXXXXXX, XXXXXXX, _______,
+        _______, XXXXXXX, XXXXXXX, G_CLONE, G_COMMI, XXXXXXX, XXXXXXX, G_MERGE, XXXXXXX, XXXXXXX, XXXXXXX, _______,                              _______,
         _______, _______, _______,                   XXXXXXX,                            _______, _______, _______, _______,            _______, _______, _______
     ),
 };
@@ -64,32 +68,32 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
         CYAN,    CYAN,    CYAN,                      WHITE,                              CYAN,    CYAN,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
-        TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL,
-        TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL
+        TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL,
+        TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL, TEAL
     },
     [LYR_FUNC] = {
         RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             RED,     _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      GOLD,    GOLD,    GREEN,
-        _______, _______, GREEN,   _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   AZURE,   AZURE,   RED,
-        CYAN,    _______, RED,     WHITE,   _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
-        CYAN,    _______, _______, _______, _______, RED,     WHITE,   _______, _______, _______, GREEN,   CYAN,                                 SPRING,
-        CYAN,    CYAN,    CYAN,                     _______,                             CYAN,    BLUE,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
+        _______, _______, GREEN,   _______, _______, ORANGE,  _______, _______, _______, _______, _______, _______, _______, _______,   AZURE,   AZURE,   RED,
+        CYAN,    _______, RED,     WHITE,   GREEN,  _______, _______, _______, _______, _______, _______, _______, CYAN,
+        CYAN,    _______, _______, _______, RED,    RED,     WHITE,   _______, _______, _______, GREEN,   CYAN,                                 SPRING,
+        CYAN,    CYAN,    CYAN,                     _______,                             CYAN,   GOLD,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
-        BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE,
-        BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE, BLUE
+        GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD,
+        GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD, GOLD
     },
     [LYR_GIT] = {
         RED,     PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,             _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,      _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______,
-        CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, CYAN,
-        CYAN,    _______, _______, _______, _______, _______, _______, _______, _______, _______, GREEN,   CYAN,                                 SPRING,
-        CYAN,    CYAN,    CYAN,                      _______,                            CYAN,    BLUE,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
+        _______, _______, _______, _______, _______, _______, _______, _______, GREEN,   _______, CORAL,   PURPLE,  _______, _______,   _______, _______, _______,
+        CYAN,    AZURE,   GREEN,   MAGENT,  GREEN,   _______, _______, _______, _______, GREEN,   _______, _______, CYAN,
+        CYAN,    _______, _______, CORAL,   CHART,   _______, _______, CHART,   _______, _______, GREEN,   CYAN,                                 SPRING,
+        CYAN,    CYAN,    CYAN,                      _______,                            CYAN,    GOLD,    CYAN,    CYAN,               SPRING,  SPRING,  SPRING,
 
         // light bar/underglow LEDs
-        GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN,
-        GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN
+        GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN,
+        GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN, GREEN
     },
 };
 
@@ -100,17 +104,39 @@ const uint8_t PROGMEM ledmap[][DRIVER_LED_TOTAL][3] = {
 
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {
-    rgb_enabled_flag = true;
+    idle_second_counter = 0;                            // Counter for number of seconds keyboard has been idle.
+    key_event_counter = 0;                              // Counter to determine if keys are being held, neutral at 0.
+    rgb_time_out_seconds = RGB_DEFAULT_TIME_OUT;        // RGB timeout initialized to its default configure in keymap.h
+    rgb_time_out_enable = true;                         // Disable RGB timeout by default. Enable using toggle key.
+    rgb_time_out_user_value = rgb_time_out_enable;      // Has to have the same initial value as rgb_time_out_enable.
+    rgb_enabled_flag = true;                            // Initially, keyboard RGB is enabled. Change to false config.h initializes RGB disabled.
+    rgb_time_out_saved_flag = rgb_matrix_get_flags();   // Save RGB matrix state for when keyboard comes back from ide.
 };
 
 // runs once after boot
 void keyboard_post_init_user(void) {
     rgb_matrix_enable();
-    rgblight_mode(RGB_MATRIX_SOLID_COLOR);
 }
 
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {
+    if(rgb_time_out_user_value && rgb_time_out_enable && rgb_enabled_flag) {
+        // If the key event counter is not zero then some key was pressed down but not released, thus reset the timeout counter.
+        if (key_event_counter) {
+            idle_second_counter = 0;
+        } else if (timer_elapsed(idle_timer) > 1000) {
+            idle_second_counter++;
+            idle_timer = timer_read();
+        }
+
+        if (idle_second_counter >= rgb_time_out_seconds) {
+            rgb_time_out_saved_flag = rgb_matrix_get_flags();
+            rgb_matrix_set_flags(LED_FLAG_NONE);
+            rgb_matrix_disable_noeeprom();
+            rgb_enabled_flag = false;
+            idle_second_counter = 0;
+        }
+    }
 };
 
 // define mod keys so that both left and right mods work
@@ -121,6 +147,24 @@ void matrix_scan_user(void) {
 // used to determine what to do on a key action
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     static uint32_t key_timer;
+
+    // Increment key event counter for every press and decrement for every release.
+    if (record->event.pressed) {
+        key_event_counter++;
+    } else {
+        key_event_counter--;
+    }
+
+    if (rgb_time_out_enable) {
+        idle_timer = timer_read();
+        // Reset the seconds counter. Without this, something like press> leave x seconds> press, would be x seconds on the effective counter not 0 as it should.
+        idle_second_counter = 0;
+        if (!rgb_enabled_flag) {
+            rgb_matrix_enable_noeeprom();
+            rgb_matrix_set_flags(rgb_time_out_saved_flag);
+            rgb_enabled_flag = true;
+        }
+    }
 
     // switch through to determine keycode
     switch (keycode) {
@@ -141,51 +185,48 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             // return false to not send the keycode to the host
             return false;
-        /*
-        case RGB_TOG:
-            // if we press the rgb toggle button
-            if (record->event.pressed) {
-                // get the current RGB flags
+    }
+    if (record->event.pressed) {
+        switch (keycode) {
+            case RGB_TOG:
                 switch (rgb_matrix_get_flags()) {
-                    // if the current flag is all
-                    // (all lights lit)
                     case LED_FLAG_ALL: {
-                        // set flags to keylight and modifier
-                        // (keys only, no underglow)
-                        rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER);
-                        // disable these leds
-                        rgb_matrix_set_color_all(0, 0, 0);
-                    }
-                    break;
-                    case LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER: {
-                        rgb_matrix_set_flags(LED_FLAG_UNDERGLOW);
-                        rgb_matrix_set_color_all(0, 0, 0);
-                    }
-                    break;
-                    case LED_FLAG_UNDERGLOW: {
+                        rgb_time_out_enable = false;
                         rgb_matrix_set_flags(LED_FLAG_NONE);
                         rgb_matrix_disable_noeeprom();
                     }
                     break;
                     default: {
+                        rgb_time_out_enable = true;
                         rgb_matrix_set_flags(LED_FLAG_ALL);
                         rgb_matrix_enable_noeeprom();
                     }
                     break;
                 }
-            }
-            return false;
-        */
-        // git macros
-        case G_INIT ... G_LOG:
-                send_string_with_delay(git_commands[keycode - G_INIT], 5);
-
                 return false;
-        // default for any normal keycodes
-        default:
-            // return true to just send the keycode to the host
-            return true;
+            case ROUT_TO: {
+                rgb_time_out_user_value = !rgb_time_out_user_value;
+                return false;
+            }
+            case ROUT_VI:
+                if (rgb_time_out_seconds <= RGB_TIME_OUT_MAX) {
+                    rgb_time_out_seconds += RGB_TIME_OUT_STEP;
+                }
+                return false;
+            case ROUT_VD:
+                if (rgb_time_out_seconds > RGB_TIME_OUT_MIN) {
+                    rgb_time_out_seconds -= RGB_TIME_OUT_STEP;
+                }
+                return false;
+            // git macros
+            case G_INIT ... G_LOG: {
+                send_string_with_delay(git_commands[keycode - G_INIT], 5);
+                clear_oneshot_layer_state(ONESHOT_OTHER_KEY_PRESSED);
+                return false;
+            }
+        }
     }
+    return true;
 }
 
 void set_layer_color(int layer) {
@@ -214,23 +255,9 @@ void set_layer_color(int layer) {
     }
 }
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-    set_layer_color(get_highest_layer(state));
-    /*
-    switch (get_highest_layer(state)) {
-        case LYR_MAIN:
-            rgblight_setrgb(0x00,  0x00, 0xFF);
-            break;
-        case LYR_FUNC:
-            rgblight_setrgb(0xFF,  0x00, 0x00);
-            break;
-        case LYR_GIT:
-            rgblight_setrgb(0x00,  0xFF, 0x00);
-            break;
-        default: //  for any other layers, or the default layer
-            rgblight_setrgb(0x00,  0xFF, 0xFF);
-            break;
+void rgb_matrix_indicators_user(void) {
+    if (g_suspend_state || rgb_matrix_get_flags() == LED_FLAG_NONE) {
+        return;
     }
-    */
-    return state;
+    set_layer_color(get_highest_layer(layer_state));
 }

@@ -2,7 +2,6 @@
     #include QMK_KEYBOARD_H
 #endif
 
-#include <stdbool.h>
 #include <print.h>
 #include <string.h>
 
@@ -37,8 +36,19 @@
     #include "quantum/process_keycode/process_tap_dance.h"
 #endif
 
-// flag to enable or disable rgb
-bool rgb_enabled_flag;
+extern rgb_config_t rgb_matrix_config;
+
+bool rgb_enabled_flag;                  // Current LED state flag. If false then LED is off.
+bool rgb_time_out_enable;               // Idle LED toggle enable. If false then LED will not turn off after idle timeout.
+bool rgb_time_out_user_value;           // This holds the toggle value set by user with ROUT_TG. It's necessary as RGB_TOG changes timeout enable.
+uint16_t rgb_time_out_seconds;          // Idle LED timeout value, in seconds not milliseconds
+uint16_t rgb_time_out_saved_seconds;    // The saved user config for RGB timeout period
+led_flags_t rgb_time_out_saved_flag;    // Store LED flag before timeout so it can be restored when LED is turned on again.
+
+#define RGB_DEFAULT_TIME_OUT 180
+#define RGB_TIME_OUT_STEP 10
+#define RGB_TIME_OUT_MIN 10
+#define RGB_TIME_OUT_MAX 300
 
 enum layers {
     LYR_MAIN = 0,
@@ -47,18 +57,14 @@ enum layers {
 };
 
 enum ctrl_keycodes {
-//    U_T_AUTO = SAFE_RANGE,     //USB Extra Port Toggle Auto Detect / Always Active
-//    U_T_AGCR,                  //USB Toggle Automatic GCR control
-//    DBG_TOG,                   //DEBUG Toggle On / Off
-//    DBG_MTRX,                  //DEBUG Toggle Matrix Prints
-//    DBG_KBD,                   //DEBUG Toggle Keyboard Prints
-//    DBG_MOU,                   //DEBUG Toggle Mouse Prints
-//    MD_BOOT,                   //Restart into bootloader after hold timeout
-    MD_BOOT = SAFE_RANGE,      //Restart into bootloader after hold timeout
+    MD_BOOT = SAFE_RANGE,        //Restart into bootloader after hold timeout
+    ROUT_TO,                     // RGB Timeout toggle
+    ROUT_VI,
+    ROUT_VD
 };
 
 enum git_keycodes {
-    G_INIT = MD_BOOT + 1,
+    G_INIT = ROUT_VD + 1,
     G_COMMI,
     G_CLONE,
     G_PUSH,
