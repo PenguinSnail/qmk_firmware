@@ -45,10 +45,10 @@ uint16_t rgb_time_out_seconds;          // Idle LED timeout value, in seconds no
 uint16_t rgb_time_out_saved_seconds;    // The saved user config for RGB timeout period
 led_flags_t rgb_time_out_saved_flag;    // Store LED flag before timeout so it can be restored when LED is turned on again.
 
-#define RGB_DEFAULT_TIME_OUT 180
+#define RGB_DEFAULT_TIME_OUT 300
 #define RGB_TIME_OUT_STEP 10
 #define RGB_TIME_OUT_MIN 10
-#define RGB_TIME_OUT_MAX 300
+#define RGB_TIME_OUT_MAX 600
 
 enum layers {
     LYR_MAIN = 0,
