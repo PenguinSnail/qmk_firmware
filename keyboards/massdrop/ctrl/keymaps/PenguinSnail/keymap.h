@@ -36,20 +36,40 @@
     #include "quantum/process_keycode/process_tap_dance.h"
 #endif
 
-extern rgb_config_t rgb_matrix_config;
+#include "raw_hid.h"
 
-bool rgb_enabled_flag;                  // Current LED state flag. If false then LED is off.
-bool rgb_time_out_enable;               // Idle LED toggle enable. If false then LED will not turn off after idle timeout.
-bool rgb_time_out_user_value;           // This holds the toggle value set by user with ROUT_TG. It's necessary as RGB_TOG changes timeout enable.
-uint16_t rgb_time_out_seconds;          // Idle LED timeout value, in seconds not milliseconds
-uint16_t rgb_time_out_saved_seconds;    // The saved user config for RGB timeout period
-led_flags_t rgb_time_out_saved_flag;    // Store LED flag before timeout so it can be restored when LED is turned on again.
+extern rgb_config_t rgb_matrix_config;
 
 #define RGB_DEFAULT_TIME_OUT 300
 #define RGB_TIME_OUT_STEP 10
 #define RGB_TIME_OUT_MIN 10
 #define RGB_TIME_OUT_MAX 600
 
+bool rgb_enabled_flag;                  // Current LED state flag. If false then LED is off.
+bool rgb_time_out_enable;               // Idle LED toggle enable. If false then LED will not turn off after idle timeout.
+bool rgb_time_out_user_value;           // This holds the toggle value set by user with ROUT_TG. It's necessary as RGB_TOG changes timeout enable.
+
+// timeout timer and counters
+uint16_t idle_timer;
+uint16_t idle_second_counter;
+uint8_t key_event_counter;
+
+uint16_t rgb_time_out_seconds;          // Idle LED timeout value, in seconds not milliseconds
+uint16_t rgb_time_out_saved_seconds;    // The saved user config for RGB timeout period
+led_flags_t rgb_time_out_saved_flag;    // Store LED flag before timeout so it can be restored when LED is turned on again.
+
+// for game colors
+bool game_color;
+uint16_t selected_game_color;
+
+#define MATRIX_CAPS_LOCK_KEY 50
+#define MATRIX_SCROLL_LOCK_KEY 14
+
+// lock states
+bool caps_lock;
+bool scroll_lock;
+
+// layers
 enum layers {
     LYR_MAIN = 0,
     LYR_FUNC,
@@ -59,16 +79,17 @@ enum layers {
 enum game_color_layers {
     LYR_OSU = LYR_COL + 1,
     LYR_TF2,
-    LYR_CIV
+    LYR_CIV,
+    LYR_LFD
 };
 
+// keycodes
 enum ctrl_keycodes {
     MD_BOOT = SAFE_RANGE,        //Restart into bootloader after hold timeout
     ROUT_TO,                     // RGB Timeout toggle
     ROUT_VI,
     ROUT_VD
 };
-
 enum git_keycodes {
     G_INIT = ROUT_VD + 1,
     G_COMMI,
@@ -84,12 +105,12 @@ enum git_keycodes {
     G_MERGE,
     G_LOG
 };
-
 enum game_color_keycodes {
     C_RESET = G_LOG + 1,
     C_OSU,
     C_TF2,
-    C_CIV
+    C_CIV,
+    C_LFD
 };
 
 // from `endgame` layout
